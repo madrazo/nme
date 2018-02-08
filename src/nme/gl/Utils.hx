@@ -36,6 +36,8 @@ class Utils
       var fshader = createShader(inFragmentSource, GL.FRAGMENT_SHADER);
       GL.attachShader(program, vshader);
       GL.attachShader(program, fshader);
+      program.shaders[0] = vshader;
+      program.shaders[1] = fshader;
       GL.linkProgram(program);
       if (GL.getProgramParameter(program, GL.LINK_STATUS)==0)
       {
