@@ -1443,6 +1443,9 @@ wchar_t *ConvertToWChar(const char *inStr, int *ioLen)
 
 void ProcessEvent(SDL_Event &inEvent)
 {
+   if (inEvent.type!=SDL_WINDOWEVENT && gCurrentFileDialog)
+      return;
+
    switch(inEvent.type)
    {
       case SDL_QUIT:
@@ -1860,10 +1863,13 @@ void CreateMainFrame(FrameCreationCallback inOnFrame, int inWidth, int inHeight,
                     WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX;
       if (resizable)
          style |= WS_THICKFRAME | WS_MAXIMIZEBOX;
-       RECT r; r.left = 0; r.top = 0; r.left = 1; r.right = 1;
+
+       RECT r;
+       r.left =  r.top = 0;
+       r.right = r.bottom = 100;
        AdjustWindowRectEx(&r, style, FALSE, 0);
-       int borderW = r.right-r.left;
-       int borderH = r.bottom-r.top;
+       int borderW = r.right-r.left - 100;
+       int borderH = r.bottom-r.top - 100;
        if (targetH + borderH > sgDesktopHeight)
        {
           targetY = -r.top;
@@ -2024,6 +2030,21 @@ void SetIcon(const char *path)
 {
    
 }
+
+#if (defined(HX_WINDOWS) && !defined(HX_WINRT))
+HWND GetApplicationWindow()
+{
+   if (!sgSDLFrame)
+      return 0;
+
+   SDL_SysWMinfo wminfo;
+   SDL_VERSION (&wminfo.version);
+   if (SDL_GetWindowWMInfo(sgSDLFrame->mStage->mSDLWindow, &wminfo) == 1)
+       return wminfo.info.win.window;
+
+   return 0;
+}
+#endif
 
 
 QuickVec<int>* CapabilitiesGetScreenResolutions()
@@ -2242,10 +2263,15 @@ void StartAnimation()
       if (sgDead)
          break;
 
+      if (gCurrentFileDialog && gCurrentFileDialog->isFinished)
+         gCurrentFileDialog->complete();
+
       double dWaitMs = (nextWake - GetTimeStamp())*1000.0 + 0.5;
       if (dWaitMs>1000000)
          dWaitMs = 1000000;
       int waitMs = (int)dWaitMs;
+      if (gCurrentFileDialog && waitMs<100)
+         waitMs = 100;
 
       // Kill some time
       if (waitMs>0)
