@@ -1,7 +1,6 @@
 #ifndef HX_WINRT
 #include <windows.h>
 #include <shlobj.h> 
-#include <Utils.h>
 
 #include <stdio.h>
 #include <string>
@@ -84,7 +83,6 @@ namespace nme {
    }
 
 
-   /*
    std::string FileDialogFolder( const std::string &title, const std::string &text ) {
 
       char path[MAX_PATH];
@@ -110,52 +108,29 @@ namespace nme {
       
       return ""; 
    }
-   */
 
-HWND GetApplicationWindow();
+   std::string FileDialogOpen( const std::string &title, const std::string &text, const std::vector<std::string> &fileTypes ) { 
 
-static unsigned __stdcall dialog_proc( void *inSpec )
-{
-   FileDialogSpec *spec = (FileDialogSpec *)inSpec;
+      OPENFILENAME ofn;
+       char path[MAX_PATH] = "";
 
-   OPENFILENAME ofn;
-   char path[MAX_PATH] = "";
+       ZeroMemory(&ofn, sizeof(ofn));
 
-   ZeroMemory(&ofn, sizeof(ofn));
+       ofn.lStructSize = sizeof(ofn);
+       ofn.lpstrFilter = "All Files (*.*)\0*.*\0";
+       ofn.lpstrFile = path;
+       ofn.lpstrTitle = title.c_str();
+       ofn.nMaxFile = MAX_PATH;
+       ofn.Flags = OFN_EXPLORER | OFN_FILEMUSTEXIST | OFN_HIDEREADONLY | OFN_ALLOWMULTISELECT;
+       ofn.lpstrDefExt = "*";
 
-   ofn.hwndOwner = GetApplicationWindow();
-   ofn.lStructSize = sizeof(ofn);
-   int len = spec->fileTypes.size();
-   std::vector<char> buf(len+2);
-   const char *ptr = spec->fileTypes.c_str();
-   for(int i=0;i<len;i++)
-      buf[i] = ptr[i]=='|' ? '\0' : ptr[i];
-   buf[len] = '\0';
-   ofn.lpstrFilter = &buf[0];
-   //ofn.lpstrFilter = "All Files (*.*)\0*.*\0";
-   ofn.lpstrFile = path;
-   ofn.lpstrTitle = spec->title.c_str();
-   ofn.nMaxFile = MAX_PATH;
-   ofn.Flags = OFN_EXPLORER | OFN_FILEMUSTEXIST | OFN_HIDEREADONLY | OFN_ALLOWMULTISELECT;
-   ofn.lpstrDefExt = "*";
+       if(GetOpenFileName(&ofn)) {
+         return std::string( ofn.lpstrFile ); 
+       } 
 
-   if (GetOpenFileName(&ofn))
-   {
-      spec->result =  std::string( ofn.lpstrFile ); 
+      return ""; 
    }
-   spec->isFinished = true;
-   // ping windows thread.
 
-   return 0;
-}
-
-
-bool FileDialogOpen( FileDialogSpec *inSpec )
-{
-   return _beginthreadex( 0, 0, dialog_proc, (void *)inSpec, 0, 0);
-}
-
-   /*
    std::string FileDialogSave( const std::string &title, const std::string &text, const std::vector<std::string> &fileTypes ) { 
 
       OPENFILENAME ofn;
@@ -177,7 +152,6 @@ bool FileDialogOpen( FileDialogSpec *inSpec )
 
       return ""; 
    }
-   */
 
 }
 #else
@@ -272,6 +246,20 @@ namespace nme {
       double hPixelsPerInch = (double)displayInformation->RawDpiX;
       double vPixelsPerInch = (double)displayInformation->RawDpiY;
       return hPixelsPerInch / vPixelsPerInch;
+   }
+
+   //https://docs.microsoft.com/en-us/windows/uwp/files/index
+   std::string FileDialogFolder( const std::string &title, const std::string &text ) {
+      //not supported on Xbox UWP
+      return ""; 
+   }
+
+   std::string FileDialogOpen( const std::string &title, const std::string &text, const std::vector<std::string> &fileTypes ) { 
+      return ""; 
+   }
+
+   std::string FileDialogSave( const std::string &title, const std::string &text, const std::vector<std::string> &fileTypes ) { 
+      return ""; 
    }
 
 }

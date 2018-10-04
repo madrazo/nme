@@ -50,20 +50,6 @@ class Loader
                   {
                      stream.close();
                      proc.close();
-
-                     var parts = s.split("\\").join("/");
-                     var parts = parts.split("/");
-                     while(parts.length>1)
-                     {
-                        var test = parts.join("/")+"/ndll";
-                        if (sys.FileSystem.exists(test))
-                        {
-                           s = parts.join("/");
-                           break;
-                        }
-                        parts.pop();
-                     }
-
                      loaderTrace("Found haxelib " + s);
                      return s;
                   }

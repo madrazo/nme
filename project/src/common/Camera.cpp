@@ -14,7 +14,6 @@ namespace nme
 {
 static int _id_on_error;
 static int _id_init_frame;
-static int _id_init_frame_fmt;
 static int _id_on_frame;
 static int _id_width;
 static int _id_height;
@@ -26,7 +25,6 @@ void InitCamera()
 {
     _id_on_error = val_id("_on_error");
     _id_init_frame = val_id("_init_frame");
-    _id_init_frame_fmt = val_id("_init_frame_fmt");
     _id_on_frame = val_id("_on_frame");
     _id_width = val_id("width");
     _id_height = val_id("height");
@@ -56,13 +54,6 @@ ImageBuffer *valueToImageBuffer(value inBmp)
 
 namespace nme
 {
-
-Camera::Camera() : status(camInit), buffer(0), width(0), height(0), pixelFormat(pfBGRA)
-{
-}
-
-
-
 bool Camera::setError(const std::string &inError)
 {
    printf(" -> %s\n", inError.c_str() );
@@ -105,7 +96,7 @@ FrameBuffer *Camera::getWriteBuffer()
 }
 
 
-void Camera::syncUpdate(value handler)
+void Camera::onPoll(value handler)
 {
    if (status==camError)
    {
@@ -115,18 +106,10 @@ void Camera::syncUpdate(value handler)
    {
       alloc_field(handler, _id_width, alloc_int(width));
       alloc_field(handler, _id_height, alloc_int(height));
-      value bmp = pixelFormat==pfBGRA ? val_ocall0(handler, _id_init_frame) :
-                                        val_ocall1(handler, _id_init_frame_fmt, alloc_int(pixelFormat) );
+      value bmp = val_ocall0(handler, _id_init_frame);
       buffer = valueToImageBuffer(bmp);
       //printf("Got image buffer %p %p (%d)\n", bmp, buffer, buffer ? buffer->Format() : 0);
    }
-}
-
-
-void Camera::onPoll(value handler)
-{
-   syncUpdate(handler);
-
    if (status==camRunning && buffer)
    {
       lock();
@@ -136,17 +119,11 @@ void Camera::onPoll(value handler)
       if (frameBuffer)
       {
          copyFrame(buffer,frameBuffer);
-         releaseFrameBuffer(frameBuffer);
-         onFrame(handler);
+         frameBuffer->age = -1;
+         val_ocall0(handler, _id_on_frame);
       }
    }
 }
-
-void Camera::onFrame(value handler)
-{
-   val_ocall0(handler, _id_on_frame);
-}
-
 } // end namespace nme
 
 value nme_camera_create(value inName)
@@ -154,7 +131,7 @@ value nme_camera_create(value inName)
    HxString name = valToHxString(inName);
    printf("Create camera %s\n", name.c_str());
 
-   #if defined(__APPLE__) || defined(HX_WINDOWS) || defined(HX_LINUX)
+   #if defined(__APPLE__) || defined(HX_WINDOWS)
    Camera *camera = CreateCamera(name.c_str());
    return ObjectToAbstract(camera);
    #else

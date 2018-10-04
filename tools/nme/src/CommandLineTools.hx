@@ -1496,12 +1496,7 @@ class CommandLineTools
       var name = parts.join(":");
 
       if (name=="")
-      {
-         if (parts.length==0)
-            return { protocol:"script", name:inDeploy };
-         else
-            return { protocol:protocol, name:"" };
-      }
+          return { protocol:"script", name:inDeploy };
       return { protocol:protocol, name:name };
    }
 

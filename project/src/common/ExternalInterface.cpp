@@ -148,7 +148,6 @@ static int _id_descent;
 static FRect _tile_rect;
 
 vkind gObjectKind;
-vkind gDataPointer;
 
 NmeApi gNmeApi;
 
@@ -257,7 +256,6 @@ extern "C" void InitIDs()
    _id_descent = val_id("descent");
 
    kind_share(&gObjectKind,"nme::Object");
-   kind_share(&gDataPointer,"data");
    
    _tile_rect = FRect(0, 0, 1, 1);
 
@@ -4378,42 +4376,6 @@ DEFINE_PRIM_MULT(nme_bitmap_data_noise);
 
 
 
-void nme_bitmap_data_get_floats32(value inSurface, value inData, int inOffset, int inStride,
-       int inPixelFormat, int inTransform, int inSubsample)
-{
-   Surface *surf;
-   if (AbstractToObject(inSurface,surf))
-   {
-      #ifndef EMSCRIPTEN
-      unsigned char *data = (unsigned char *)val_to_kind(inData, gDataPointer);
-      if (data)
-      {
-         surf->getFloats32((float *)(data + inOffset), inStride, (PixelFormat)inPixelFormat, inTransform, inSubsample);
-      }
-      #endif
-   }
-}
-DEFINE_PRIME7v(nme_bitmap_data_get_floats32);
-
-void nme_bitmap_data_set_floats32(value inSurface, value inData, int inOffset, int inStride,
-       int inPixelFormat, int inTransform, int inExpand)
-{
-   Surface *surf;
-   if (AbstractToObject(inSurface,surf))
-   {
-      #ifndef EMSCRIPTEN
-      unsigned char *data = (unsigned char *)val_to_kind(inData, gDataPointer);
-      if (data)
-      {
-         surf->setFloats32((float *)(data + inOffset), inStride, (PixelFormat)inPixelFormat, inTransform, inExpand);
-      }
-      #endif
-   }
-}
-DEFINE_PRIME7v(nme_bitmap_data_set_floats32);
-
-
-
 value nme_bitmap_data_flood_fill(value inSurface, value inX, value inY, value inColor)
 {
    Surface *surf;
@@ -5246,28 +5208,6 @@ value nme_lzma_decode(value input_value)
 DEFINE_PRIM(nme_lzma_decode,1);
 
 
-
-namespace nme
-{
-FileDialogSpec *gCurrentFileDialog = 0;
-
-FileDialogSpec::~FileDialogSpec()
-{
-   delete callback;
-}
-void FileDialogSpec::complete()
-{
-   gCurrentFileDialog = 0;
-   if (result.empty())
-      val_call1(callback->get(), alloc_null( ) );
-   else
-      val_call1(callback->get(), alloc_string( result.c_str() ) );
-   delete this;
-}
-
-}
-
-/*
 value nme_file_dialog_folder(value in_title, value in_text )
 { 
     std::string _title( valToStdString( in_title ) );
@@ -5278,38 +5218,20 @@ value nme_file_dialog_folder(value in_title, value in_text )
     return alloc_string( path.c_str() );
 }
 DEFINE_PRIM(nme_file_dialog_folder,2);
-*/
 
+value nme_file_dialog_open(value in_title, value in_text, value in_types )
+{ 
+    std::string _title( valToStdString( in_title ) );
+    std::string _text( valToStdString( in_text ) );
 
-bool nme_file_dialog_open(HxString inTitle, HxString inText, HxString inDefaultPath, HxString inTypes, value inCallback )
-{
-   if (gCurrentFileDialog)
-      return false;
+    //value *_types = val_array_value( in_types );
 
-   // TODO - mac
-   #if defined(HX_WINDOWS) && !defined(HX_WINRT)
-   gCurrentFileDialog = new FileDialogSpec();
-   gCurrentFileDialog->title = inTitle.c_str();
-   gCurrentFileDialog->text = inText.c_str();
-   gCurrentFileDialog->defaultPath = inDefaultPath.c_str();
-   gCurrentFileDialog->fileTypes = inTypes.c_str();
-   gCurrentFileDialog->callback = new AutoGCRoot(inCallback);
+    std::string path = FileDialogOpen( _title, _text, std::vector<std::string>() );
 
-   if (!FileDialogOpen( gCurrentFileDialog ))
-   {
-      delete gCurrentFileDialog;
-      gCurrentFileDialog = 0;
-      return false;
-   }
-   else
-      return true;
-   #endif
-
-   return false;
+    return alloc_string( path.c_str() );
 }
-DEFINE_PRIME5(nme_file_dialog_open);
+DEFINE_PRIM(nme_file_dialog_open,3);
 
-/*
 value nme_file_dialog_save(value in_title, value in_text, value in_types )
 { 
     std::string _title( valToStdString( in_title ) );
@@ -5322,7 +5244,6 @@ value nme_file_dialog_save(value in_title, value in_text, value in_types )
     return alloc_string( path.c_str() );
 }
 DEFINE_PRIM(nme_file_dialog_save,3);
-*/
 
 // Reference this to bring in all the symbols for the static library
 #ifdef STATIC_LINK

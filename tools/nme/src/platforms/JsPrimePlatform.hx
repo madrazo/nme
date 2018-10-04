@@ -172,9 +172,6 @@ class JsPrimePlatform extends Platform
                if (estrSet.match(line))
                {
                   estr = line;
-                  var commaPos = estr.indexOf(',');
-                  if (commaPos>=0)
-                     estr = "var " + line.substr(commaPos+1) + "\n";
                   contents = contents.substr(0,lastPos+1) + "// " + contents.substr(lastPos+4);
                }
                else if (hxClassesDef.match(line))

@@ -1,6 +1,8 @@
 package nme.display;
 
-import nme.geom.*;
+import nme.geom.Matrix;
+import nme.geom.Point;
+import nme.geom.Rectangle;
 import nme.Loader;
 import nme.NativeHandle;
 
@@ -25,30 +27,22 @@ class Tilesheet
 
 
    public var nmeBitmap:BitmapData;
-   public var tileCount(default,null):Int;
 
    #if !flash
 
    public var nmeHandle:NativeHandle;
 
-   public function new(inImage:BitmapData, ?rects:Array<Rectangle>) 
+   public function new(inImage:BitmapData) 
    {
-      tileCount = 0;
       nmeBitmap = inImage;
       nmeHandle = nme_tilesheet_create(inImage.nmeHandle);
-      if (rects!=null)
-         for(rect in rects)
-            addTileRect(rect);
    }
 
    public function addTileRect(rectangle:Rectangle, centerPoint:Point = null):Int 
    {
-      tileCount++;
       return nme_tilesheet_add_rect(nmeHandle, rectangle, centerPoint);
    }
-
    
-
    public function getTileRect(index:Int, ?result:Rectangle):Rectangle
    {
       if (result == null)
@@ -84,7 +78,6 @@ class Tilesheet
 
    public function addTileRect(rectangle:Rectangle, centerPoint:Point = null):Int 
    {
-      tileCount++;
       var result = tiles.length;
       tiles.push(rectangle);
       centres.push(centerPoint);
@@ -105,10 +98,5 @@ class Tilesheet
 
 
    #end
-
-   inline public function getRect(index:Int):Rectangle return getTileRect(index);
-
-   inline public function addRect(rectangle:Rectangle) return addTileRect(rectangle);
-
 }
 

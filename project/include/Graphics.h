@@ -269,7 +269,6 @@ enum PathCommand
 
 extern int gCommandDataSize[256];
 
-#undef WindingRule
 enum WindingRule { wrOddEven, wrNonZero };
 
 

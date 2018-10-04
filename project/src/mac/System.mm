@@ -71,7 +71,6 @@ double CapabilitiesGetPixelAspectRatio() {
 	return result;
 }
 
-   #if 0
 	std::string FileDialogOpen( const std::string &title, const std::string &text, const std::vector<std::string> &fileTypes ) {
 	    
 	    // NSArray *fileTypes = [NSArray arrayWithObjects:@"jpg",@"jpeg",nil];
@@ -150,6 +149,5 @@ double CapabilitiesGetPixelAspectRatio() {
 		return std::string();
 
 	} //FileDialogFolder
-   #endif
 
 }

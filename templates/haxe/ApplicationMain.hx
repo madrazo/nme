@@ -268,7 +268,6 @@ class ApplicationMain
    {
       #if jsprime
       untyped __define_feature__("Type.getClassName", {});
-      untyped __define_feature__("Type.resolveClass", {});
       untyped __define_feature__("haxe.Log.trace", {});
       untyped __define_feature__("use.$iterator", {});
       untyped __define_feature__("use.$bind", {});

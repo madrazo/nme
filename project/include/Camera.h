@@ -19,7 +19,6 @@ struct FrameBuffer
    unsigned char *row(int inY) { return &data[inY*stride]; }
    std::vector<unsigned char> data;
 
-   int index;
    int width;
    int height;
    int stride;
@@ -29,20 +28,14 @@ struct FrameBuffer
 class Camera : public Object
 {
 public:
-   Camera();
+   Camera() : status(camInit), buffer(0), width(0), height(0) { }
    ~Camera() { if (buffer) buffer->DecRef(); }
 
-   void onFrame(value inHandler);
-   void syncUpdate(value inHandler);
-   virtual void onPoll(value inHandler);
+   void onPoll(value inHandler);
 
-   virtual void copyFrame(ImageBuffer *outBuffer, FrameBuffer *inFrame) { }
+   virtual void copyFrame(ImageBuffer *outBuffer, FrameBuffer *inFrame) = 0;
    virtual void lock( ) = 0;
    virtual void unlock( ) = 0;
-   virtual void releaseFrameBuffer(FrameBuffer *ioBuffer)
-   {
-      ioBuffer->age = -1;
-   }
    FrameBuffer  *getWriteBuffer();
    FrameBuffer  *getReadBuffer();
 
@@ -57,7 +50,6 @@ public:
    int          width;
    int          height;
    int          frameId;
-   PixelFormat  pixelFormat;
    FrameBuffer  frameBuffers[3];
    ImageBuffer  *buffer;
 };
