@@ -809,7 +809,7 @@ struct JNIField : public nme::Object
       return (!mFieldType.isUnknown());
    }
 
-   bool Ok() const { return mField>0; }
+   bool Ok() const { return mField!=NULL; }
    
    value GetStatic()
    {
@@ -1164,7 +1164,7 @@ struct JNIMethod : public nme::Object
       return !mReturn.isUnknown();
    }
 
-   bool Ok() const { return mMethod>0; }
+   bool Ok() const { return mMethod!=NULL; }
 
 
 
