@@ -462,7 +462,10 @@ class NMEProject
                      architectures = [ PlatformHelper.hostArchitecture ];
                }
                else
-                  architectures = [ Architecture.X64 ];
+                  if(getIs64(target==Platform.WINDOWS))
+                     architectures = [ Architecture.X64 ];
+                  else
+                     architectures = [ PlatformHelper.hostArchitecture ];
             }
             window.singleInstance = false;
 
@@ -498,6 +501,24 @@ class NMEProject
       }
    }
 
+   private static function getIs64(isWindows:Bool):Bool
+   {
+      if (isWindows)
+      {
+         var architecture = Sys.getEnv ("PROCESSOR_ARCHITEW6432");
+         return (architecture != null && architecture.indexOf ("64") > -1);
+      }
+      else
+      {
+         var process = new sys.io.Process("uname", [ "-m" ]);
+         var output = process.stdout.readAll().toString();
+         var error = process.stderr.readAll().toString();
+         process.exitCode();
+         process.close();
+         return (output.indexOf("64") > -1);
+      }
+   }
+ 
    public function setProjectFilename(inFilename:String)
    {
       projectFilename = inFilename;
